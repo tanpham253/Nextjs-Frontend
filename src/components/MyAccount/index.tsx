@@ -4,6 +4,7 @@ import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import AddressModal from "./AddressModal";
 import Orders from "../Orders";
+import { signOut } from "next-auth/react";
 
 const MyAccount = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -217,9 +218,9 @@ const MyAccount = () => {
                       </svg>
                       Account Details
                     </button>
-
+                    {/* {() => setActiveTab("logout")} */}
                     <button
-                      onClick={() => setActiveTab("logout")}
+                      onClick={() => signOut({ callbackUrl: "/signin" })}
                       className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${
                         activeTab === "logout"
                           ? "text-white bg-blue"
@@ -262,12 +263,19 @@ const MyAccount = () => {
             >
               <p className="text-dark">
                 Hello Annie (not Annie?
-                <a
+                <button
+                  className="text-red ease-out duration-200 hover:underline"
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/signin" })}
+                >
+                  Logout
+                </button>
+                {/* <a
                   href="#"
                   className="text-red ease-out duration-200 hover:underline"
                 >
                   Log Out
-                </a>
+                </a> */}
                 )
               </p>
 
