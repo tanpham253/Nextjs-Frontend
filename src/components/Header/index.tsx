@@ -1,4 +1,5 @@
 "use client";
+import { useSession } from "next-auth/react";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CustomSelect from "./CustomSelect";
@@ -11,6 +12,7 @@ import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import Image from "next/image";
 
 const Header = () => {
+  const { data: session, status } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
@@ -62,13 +64,10 @@ const Header = () => {
         >
           {/* <!-- header top left --> */}
           <div className="xl:w-auto flex-col sm:flex-row w-full flex sm:justify-between sm:items-center gap-5 sm:gap-10">
-            <Link className="flex-shrink-0" href="/">
-              <Image
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={219}
-                height={36}
-              />
+            <Link className="flex-shrink-0 group" href="/">
+              <p className="text-2xl font-bold tracking-tight text-blue-600 group-hover:text-blue-700 transition-colors">
+                Smart<span className="text-blue-400">Buy</span>
+              </p>
             </Link>
 
             <div className="max-w-[475px] w-full">
@@ -77,7 +76,6 @@ const Header = () => {
                   <CustomSelect options={options} />
 
                   <div className="relative max-w-[333px] sm:min-w-[333px] w-full">
-                    {/* <!-- divider --> */}
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 inline-block w-px h-5.5 bg-gray-4"></span>
                     <input
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -85,7 +83,7 @@ const Header = () => {
                       type="search"
                       name="search"
                       id="search"
-                      placeholder="I am shopping for..."
+                      placeholder="Search"
                       autoComplete="off"
                       className="custom-search w-full rounded-r-[5px] bg-gray-1 !border-l-0 border border-gray-3 py-2.5 pl-4 pr-10 outline-none ease-in duration-200"
                     />
@@ -185,7 +183,7 @@ const Header = () => {
                       account
                     </span>
                     <p className="font-medium text-custom-sm text-dark">
-                      Sign In
+                      {session?.user?.name || "Sign In"}
                     </p>
                   </div>
                 </Link>
@@ -293,14 +291,14 @@ const Header = () => {
         <div className="max-w-[1170px] mx-auto px-4 sm:px-7.5 xl:px-0">
           <div className="flex items-center justify-between">
             {/* <!--=== Main Nav Start ===--> */}
-            <div
+            {/* <div
               className={`w-[288px] absolute right-4 top-full xl:static xl:w-auto h-0 xl:h-auto invisible xl:visible xl:flex items-center justify-between ${
                 navigationOpen &&
                 `!visible bg-white shadow-lg border border-gray-3 !h-auto max-h-[400px] overflow-y-scroll rounded-md p-5`
               }`}
-            >
-              {/* <!-- Main Nav Start --> */}
-              <nav>
+            > */}
+            {/* <!-- Main Nav Start --> */}
+            {/* <nav>
                 <ul className="flex xl:items-center flex-col xl:flex-row gap-5 xl:gap-6">
                   {menuData.map((menuItem, i) =>
                     menuItem.submenu ? (
@@ -326,13 +324,13 @@ const Header = () => {
                     )
                   )}
                 </ul>
-              </nav>
-              {/* //   <!-- Main Nav End --> */}
-            </div>
+              </nav> */}
+            {/* //   <!-- Main Nav End --> */}
+            {/* </div> */}
             {/* // <!--=== Main Nav End ===--> */}
 
             {/* // <!--=== Nav Right Start ===--> */}
-            <div className="hidden xl:block">
+            {/* <div className="hidden xl:block">
               <ul className="flex items-center gap-5.5">
                 <li className="py-4">
                   <a
@@ -382,7 +380,7 @@ const Header = () => {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
             {/* <!--=== Nav Right End ===--> */}
           </div>
         </div>

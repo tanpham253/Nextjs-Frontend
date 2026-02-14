@@ -7,16 +7,16 @@ type InitialState = {
 
 const initialState = {
   value: {
-    title: "",
+    product_name: "",
     reviews: 0,
     price: 0,
     discountedPrice: 0,
     img: "",
     images: [],
-    id: 0,
+    _id: 0,
     imgs: { thumbnails: [], previews: [] },
   },
-} as InitialState;
+} as unknown as InitialState;
 
 export const productDetails = createSlice({
   name: "productDetails",

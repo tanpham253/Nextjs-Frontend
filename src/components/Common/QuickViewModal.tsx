@@ -9,6 +9,7 @@ import Image from "next/image";
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { resetQuickView } from "@/redux/features/quickView-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
+import { getServerImageSrc } from "@/helper/imageLink.helper";
 
 const QuickViewModal = () => {
   const { isModalOpen, closeModal } = useModalContext();
@@ -94,7 +95,7 @@ const QuickViewModal = () => {
             <div className="max-w-[526px] w-full">
               <div className="flex gap-5">
                 <div className="flex flex-col gap-5">
-                  {product.imgs.thumbnails?.map((img, key) => (
+                  {product.imgs?.thumbnails?.map((img, key) => (
                     <button
                       onClick={() => setActivePreview(key)}
                       key={key}
@@ -103,7 +104,7 @@ const QuickViewModal = () => {
                       }`}
                     >
                       <Image
-                        src={img || ""}
+                        src={getServerImageSrc(product.thumbnail)}
                         alt="thumbnail"
                         width={61}
                         height={61}
@@ -138,7 +139,7 @@ const QuickViewModal = () => {
                     </button>
 
                     <Image
-                      src={product?.imgs?.previews?.[activePreview]}
+                      src={getServerImageSrc(product.thumbnail)}
                       alt="products-details"
                       width={400}
                       height={400}
@@ -150,126 +151,43 @@ const QuickViewModal = () => {
 
             <div className="max-w-[445px] w-full">
               <span className="inline-block text-custom-xs font-medium text-white py-1 px-3 bg-green mb-6.5">
-                SALE 20% OFF
+                SALE {product.discount}% OFF
               </span>
 
               <h3 className="font-semibold text-xl xl:text-heading-5 text-dark mb-4">
-                {product.title}
+                {product.product_name}
               </h3>
 
               <div className="flex flex-wrap items-center gap-5 mb-6">
                 <div className="flex items-center gap-1.5">
-                  {/* <!-- stars --> */}
-                  <div className="flex items-center gap-1">
-                    <svg
-                      className="fill-[#FFA645]"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_375_9172)">
-                        <path
-                          d="M16.7906 6.72187L11.7 5.93438L9.39377 1.09688C9.22502 0.759375 8.77502 0.759375 8.60627 1.09688L6.30002 5.9625L1.23752 6.72187C0.871891 6.77812 0.731266 7.25625 1.01252 7.50938L4.69689 11.3063L3.82502 16.6219C3.76877 16.9875 4.13439 17.2969 4.47189 17.0719L9.05627 14.5687L13.6125 17.0719C13.9219 17.2406 14.3156 16.9594 14.2313 16.6219L13.3594 11.3063L17.0438 7.50938C17.2688 7.25625 17.1563 6.77812 16.7906 6.72187Z"
-                          fill=""
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_375_9172">
-                          <rect width="18" height="18" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
+                  {/* Stars */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Stars */}
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, index) => {
+                        const rating = Number(product.star_number);
+                        const full = index < rating;
 
-                    <svg
-                      className="fill-[#FFA645]"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_375_9172)">
-                        <path
-                          d="M16.7906 6.72187L11.7 5.93438L9.39377 1.09688C9.22502 0.759375 8.77502 0.759375 8.60627 1.09688L6.30002 5.9625L1.23752 6.72187C0.871891 6.77812 0.731266 7.25625 1.01252 7.50938L4.69689 11.3063L3.82502 16.6219C3.76877 16.9875 4.13439 17.2969 4.47189 17.0719L9.05627 14.5687L13.6125 17.0719C13.9219 17.2406 14.3156 16.9594 14.2313 16.6219L13.3594 11.3063L17.0438 7.50938C17.2688 7.25625 17.1563 6.77812 16.7906 6.72187Z"
-                          fill=""
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_375_9172">
-                          <rect width="18" height="18" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-
-                    <svg
-                      className="fill-[#FFA645]"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_375_9172)">
-                        <path
-                          d="M16.7906 6.72187L11.7 5.93438L9.39377 1.09688C9.22502 0.759375 8.77502 0.759375 8.60627 1.09688L6.30002 5.9625L1.23752 6.72187C0.871891 6.77812 0.731266 7.25625 1.01252 7.50938L4.69689 11.3063L3.82502 16.6219C3.76877 16.9875 4.13439 17.2969 4.47189 17.0719L9.05627 14.5687L13.6125 17.0719C13.9219 17.2406 14.3156 16.9594 14.2313 16.6219L13.3594 11.3063L17.0438 7.50938C17.2688 7.25625 17.1563 6.77812 16.7906 6.72187Z"
-                          fill=""
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_375_9172">
-                          <rect width="18" height="18" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-
-                    <svg
-                      className="fill-gray-4"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_375_9172)">
-                        <path
-                          d="M16.7906 6.72187L11.7 5.93438L9.39377 1.09688C9.22502 0.759375 8.77502 0.759375 8.60627 1.09688L6.30002 5.9625L1.23752 6.72187C0.871891 6.77812 0.731266 7.25625 1.01252 7.50938L4.69689 11.3063L3.82502 16.6219C3.76877 16.9875 4.13439 17.2969 4.47189 17.0719L9.05627 14.5687L13.6125 17.0719C13.9219 17.2406 14.3156 16.9594 14.2313 16.6219L13.3594 11.3063L17.0438 7.50938C17.2688 7.25625 17.1563 6.77812 16.7906 6.72187Z"
-                          fill=""
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_375_9172">
-                          <rect width="18" height="18" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-
-                    <svg
-                      className="fill-gray-4"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 18 18"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <g clipPath="url(#clip0_375_9172)">
-                        <path
-                          d="M16.7906 6.72187L11.7 5.93438L9.39377 1.09688C9.22502 0.759375 8.77502 0.759375 8.60627 1.09688L6.30002 5.9625L1.23752 6.72187C0.871891 6.77812 0.731266 7.25625 1.01252 7.50938L4.69689 11.3063L3.82502 16.6219C3.76877 16.9875 4.13439 17.2969 4.47189 17.0719L9.05627 14.5687L13.6125 17.0719C13.9219 17.2406 14.3156 16.9594 14.2313 16.6219L13.3594 11.3063L17.0438 7.50938C17.2688 7.25625 17.1563 6.77812 16.7906 6.72187Z"
-                          fill=""
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_375_9172">
-                          <rect width="18" height="18" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
+                        return (
+                          <svg
+                            key={index}
+                            className={full ? "fill-[#FFA645]" : "fill-gray-4"}
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M16.7906 6.72187L11.7 5.93438L9.39377 1.09688C9.22502 0.759375 8.77502 0.759375 8.60627 1.09688L6.30002 5.9625L1.23752 6.72187C0.871891 6.77812 0.731266 7.25625 1.01252 7.50938L4.69689 11.3063L3.82502 16.6219C3.76877 16.9875 4.13439 17.2969 4.47189 17.0719L9.05627 14.5687L13.6125 17.0719C13.9219 17.2406 14.3156 16.9594 14.2313 16.6219L13.3594 11.3063L17.0438 7.50938C17.2688 7.25625 17.1563 6.77812 16.7906 6.72187Z" />
+                          </svg>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <span>
-                    <span className="font-medium text-dark"> 4.7 Rating </span>
-                    <span className="text-dark-2"> (5 reviews) </span>
+                    <span className="font-medium text-dark">
+                      {product.star_number} Rating
+                    </span>
                   </span>
                 </div>
 

@@ -1,78 +1,34 @@
-'use client'
-import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import * as yup from "yup"
-import { signIn, useSession } from 'next-auth/react';
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+"use client";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { signIn, useSession } from "next-auth/react";
+import { useLogin } from "@/hooks/useLogin";
 import Breadcrumb from "@/components/Common/Breadcrumb";
 import Link from "next/link";
 const schema = yup
   .object({
-    email: yup.string().email().required(),
-    password: yup.string().required()
+    email: yup.string().email().required("Email is required"),
+    password: yup.string().required("Password is required"),
   })
-  .required()
+  .required();
 
-const callbackUrl = '/my-account'; // Đường dẫn sau khi đăng nhập thành công
-/**
- * 
- * Được hiểu ngầm định là Server component
- */
-const LoginForm = ({csrfToken}: {csrfToken: string | undefined}) => {
-    const [error, setError] = useState('');
-    const router = useRouter();
-    const [isLoading, setIsLoading] =  useState(false)
-
-    const { status } = useSession()
-
-    //Nếu đã login rồi, thì chuyển hướng sang callbackUrl
-    useEffect(()=>{
-        if (status  === 'authenticated') {
-        router.push(callbackUrl);
-    }
-    },[status,router,callbackUrl])
-
+const LoginForm = ({ csrfToken }: { csrfToken?: string }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
-  })
-  const onSubmit = async (data: {email: string, password: string}) => {
-    console.log(data);
-    setIsLoading(true);
-    try {
-       
-        const res = await signIn('credentials', {
-            redirect: false,
-            email: data.email,
-            password: data.password,
-            csrfToken,
-            callbackUrl: callbackUrl, //nếu login thanh cong thi chuyen huong
-          });
-        ///
-        console.log(res);
-        //check nếu login thành công thì chuyển hướng
-        if(res && res.ok){
-            router.push(callbackUrl);
-        }else{
-            setError('invalid email or password');
-        }
+  });
 
-        setIsLoading(false);
+  const { error, isLoading, handleLogin, handleSocialLogin, setError } =
+    useLogin({
+      csrfToken,
+      callbackUrl: "/my-account",
+    });
 
-    } catch (error: any) {
-        console.log('error',error);
-        setIsLoading(false);
-        setError(error?.message)
-    }
-    
-  }
-
-  return  (
+  return (
     <>
       <Breadcrumb title="Signin" pages={["Signin"]} />
       <section className="overflow-hidden py-20 bg-gray-2">
@@ -85,7 +41,7 @@ const LoginForm = ({csrfToken}: {csrfToken: string | undefined}) => {
               <p>Enter your details below</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(handleLogin)}>
               {error && (
                 <p className="text-center bg-red-200 text-red-800 py-3 mb-5 rounded">
                   {error}
@@ -119,7 +75,9 @@ const LoginForm = ({csrfToken}: {csrfToken: string | undefined}) => {
                   id="password"
                   placeholder="Enter your password"
                   autoComplete="on"
-                  {...register("password", { required: "Password is required" })}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
                   className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
                 />
                 {errors.password && (
@@ -153,7 +111,7 @@ const LoginForm = ({csrfToken}: {csrfToken: string | undefined}) => {
               <div className="flex flex-col gap-4.5 mt-4.5">
                 <button
                   type="button"
-                  onClick={() => signIn("google", { redirect: true, callbackUrl })}
+                  onClick={() => handleSocialLogin("google")}
                   className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2"
                 >
                   <svg
@@ -198,7 +156,7 @@ const LoginForm = ({csrfToken}: {csrfToken: string | undefined}) => {
         </div>
       </section>
     </>
-  )
-}
+  );
+};
 
-export default LoginForm
+export default LoginForm;

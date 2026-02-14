@@ -6,8 +6,8 @@ type InitialState = {
 };
 
 type CartItem = {
-  id: number;
-  title: string;
+  _id: string;
+  product_name: string;
   price: number;
   discountedPrice: number;
   quantity: number;
@@ -26,16 +26,16 @@ export const cart = createSlice({
   initialState,
   reducers: {
     addItemToCart: (state, action: PayloadAction<CartItem>) => {
-      const { id, title, price, quantity, discountedPrice, imgs } =
+      const { _id, product_name, price, quantity, discountedPrice, imgs } =
         action.payload;
-      const existingItem = state.items.find((item) => item.id === id);
+      const existingItem = state.items.find((item) => item._id === _id);
 
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
         state.items.push({
-          id,
-          title,
+          _id,
+          product_name,
           price,
           quantity,
           discountedPrice,
@@ -43,16 +43,16 @@ export const cart = createSlice({
         });
       }
     },
-    removeItemFromCart: (state, action: PayloadAction<number>) => {
+    removeItemFromCart: (state, action: PayloadAction<string>) => {
       const itemId = action.payload;
-      state.items = state.items.filter((item) => item.id !== itemId);
+      state.items = state.items.filter((item) => item._id !== itemId);
     },
     updateCartItemQuantity: (
       state,
-      action: PayloadAction<{ id: number; quantity: number }>
+      action: PayloadAction<{ _id: string; quantity: number }>
     ) => {
-      const { id, quantity } = action.payload;
-      const existingItem = state.items.find((item) => item.id === id);
+      const { _id, quantity } = action.payload;
+      const existingItem = state.items.find((item) => item._id === _id);
 
       if (existingItem) {
         existingItem.quantity = quantity;

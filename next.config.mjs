@@ -14,7 +14,6 @@ const nextConfig = {
       "i.imgur.com",
       "placeimg.com",
       "down-vn.img.susercontent.com",
-      "localhost",
     ],
   },
 };

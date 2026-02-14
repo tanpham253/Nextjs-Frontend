@@ -6,8 +6,17 @@ import Newsletter from "../Common/Newsletter";
 import RecentlyViewdItems from "./RecentlyViewd";
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { useAppSelector } from "@/redux/store";
+import { Product } from "@/types/product";
+import { getServerImageSrc } from "@/helper/imageLink.helper";
+import { useDispatch } from "react-redux";
+import { addItemToCart } from "@/redux/features/cart-slice";
+import { AppDispatch } from "@/redux/store";
 
-const ShopDetails = () => {
+interface ShopDetailsProps {
+  product: Product;
+}
+
+const ShopDetails: React.FC<ShopDetailsProps> = ({ product }) => {
   const [activeColor, setActiveColor] = useState("blue");
   const { openPreviewModal } = usePreviewSlider();
   const [previewImg, setPreviewImg] = useState(0);
@@ -16,89 +25,61 @@ const ShopDetails = () => {
   const [type, setType] = useState("active");
   const [sim, setSim] = useState("dual");
   const [quantity, setQuantity] = useState(1);
-
   const [activeTab, setActiveTab] = useState("tabOne");
 
   const storages = [
-    {
-      id: "gb128",
-      title: "128 GB",
-    },
-    {
-      id: "gb256",
-      title: "256 GB",
-    },
-    {
-      id: "gb512",
-      title: "521 GB",
-    },
+    { id: "gb128", title: "128 GB" },
+    { id: "gb256", title: "256 GB" },
+    { id: "gb512", title: "512 GB" },
   ];
 
   const types = [
-    {
-      id: "active",
-      title: "Active",
-    },
-
-    {
-      id: "inactive",
-      title: "Inactive",
-    },
+    { id: "active", title: "Active" },
+    { id: "inactive", title: "Inactive" },
   ];
 
   const sims = [
-    {
-      id: "dual",
-      title: "Dual",
-    },
-
-    {
-      id: "e-sim",
-      title: "E Sim",
-    },
+    { id: "dual", title: "Dual" },
+    { id: "e-sim", title: "E Sim" },
   ];
 
   const tabs = [
-    {
-      id: "tabOne",
-      title: "Description",
-    },
-    {
-      id: "tabTwo",
-      title: "Additional Information",
-    },
-    {
-      id: "tabThree",
-      title: "Reviews",
-    },
+    { id: "tabOne", title: "Description" },
+    { id: "tabTwo", title: "Additional Information" },
+    { id: "tabThree", title: "Reviews" },
   ];
 
   const colors = ["red", "blue", "orange", "pink", "purple"];
 
-  const alreadyExist = localStorage.getItem("productDetails");
-  const productFromStorage = useAppSelector(
-    (state) => state.productDetailsReducer.value
-  );
+  // const alreadyExist = localStorage.getItem("productDetails");
+  // const productFromStorage = useAppSelector(
+  //   (state) => state.productDetailsReducer.value
+  // );
+  // product = alreadyExist ? JSON.parse(alreadyExist) : productFromStorage;
+  // useEffect(() => {
+  //   localStorage.setItem("productDetails", JSON.stringify(product));
+  // }, [product]);
 
-  const product = alreadyExist ? JSON.parse(alreadyExist) : productFromStorage;
+  const handlePreviewSlider = () => openPreviewModal();
 
-  useEffect(() => {
-    localStorage.setItem("productDetails", JSON.stringify(product));
-  }, [product]);
-
-  // pass the product here when you get the real data.
-  const handlePreviewSlider = () => {
-    openPreviewModal();
+  const dispatch = useDispatch<AppDispatch>();
+  const handleAddToCart = () => {
+    dispatch(
+      addItemToCart({
+        ...product,
+        quantity: quantity,
+      })
+    );
   };
 
-  console.log(product);
+  if (!product) return null;
 
   return (
     <>
       <Breadcrumb title={"Shop Details"} pages={["shop details"]} />
 
-      {product.title === "" ? (
-        "Please add product"
+      {product.product_name === "" ? (
+        "product name is empty"
       ) : (
         <>
           <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28">
@@ -130,7 +111,7 @@ const ShopDetails = () => {
                       </button>
 
                       <Image
-                        src={product.imgs?.previews[previewImg]}
+                        src={getServerImageSrc(product.thumbnail)}
                         alt="products-details"
                         width={400}
                         height={400}
@@ -165,11 +146,11 @@ const ShopDetails = () => {
                 <div className="max-w-[539px] w-full">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="font-semibold text-xl sm:text-2xl xl:text-custom-3 text-dark">
-                      {product.title}
+                      {product.product_name}
                     </h2>
 
                     <div className="inline-flex font-medium text-custom-sm text-white bg-blue rounded py-0.5 px-2.5">
-                      30% OFF
+                      {product.discount} % OFF
                     </div>
                   </div>
 
@@ -311,7 +292,11 @@ const ShopDetails = () => {
                         </defs>
                       </svg>
 
-                      <span className="text-green"> In Stock </span>
+                      {product.stock > 0 ? (
+                        <span className="text-green">In Stock</span>
+                      ) : (
+                        <span className="text-red-500">Out of Stock</span>
+                      )}
                     </div>
                   </div>
 
@@ -319,7 +304,7 @@ const ShopDetails = () => {
                     <span className="text-sm sm:text-base text-dark">
                       Price: ${product.price}
                     </span>
-                    <span className="line-through">
+                    <span className="text-sm sm:text-base line-through text-red">
                       {" "}
                       ${product.discountedPrice}{" "}
                     </span>
@@ -670,10 +655,10 @@ const ShopDetails = () => {
                       </div>
 
                       <a
-                        href="#"
+                        onClick={() => handleAddToCart()}
                         className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
                       >
-                        Purchase Now
+                        Add to cart
                       </a>
 
                       <a
@@ -1446,7 +1431,7 @@ const ShopDetails = () => {
 
           <RecentlyViewdItems />
 
-          <Newsletter />
+          {/* <Newsletter /> */}
         </>
       )}
     </>

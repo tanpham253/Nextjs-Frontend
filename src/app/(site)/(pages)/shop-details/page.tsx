@@ -11,7 +11,24 @@ export const metadata: Metadata = {
 const ShopDetailsPage = () => {
   return (
     <main>
-      <ShopDetails />
+      <ShopDetails product={{
+        product_name: "",
+        stock: 0,
+        slug: "",
+        reviews: 0,
+        model_year: 0,
+        price: 0,
+        discountedPrice: 0,
+        description: "",
+        category_id: "",
+        brand_id: "",
+        discount: 0,
+        _id: "",
+        imgs: {
+          thumbnails: [],
+          previews: []
+        }
+      }} />
     </main>
   );
 };

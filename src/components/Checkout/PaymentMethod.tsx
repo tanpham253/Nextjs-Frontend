@@ -1,8 +1,9 @@
+"use client";
 import React, { useState } from "react";
 import Image from "next/image";
 
 const PaymentMethod = () => {
-  const [payment, setPayment] = useState("bank");
+  const [payment, setPayment] = useState("cash");
   return (
     <div className="bg-white shadow-1 rounded-[10px] mt-7.5">
       <div className="border-b border-gray-3 py-5 px-4 sm:px-8.5">
@@ -11,7 +12,7 @@ const PaymentMethod = () => {
 
       <div className="p-4 sm:p-8.5">
         <div className="flex flex-col gap-3">
-          <label
+          {/* <label
             htmlFor="bank"
             className="flex cursor-pointer select-none items-center gap-4"
           >
@@ -49,7 +50,7 @@ const PaymentMethod = () => {
                 </div>
               </div>
             </div>
-          </label>
+          </label> */}
 
           <label
             htmlFor="cash"
@@ -62,6 +63,7 @@ const PaymentMethod = () => {
                 id="cash"
                 className="sr-only"
                 onChange={() => setPayment("cash")}
+                defaultChecked={payment === "cash"}
               />
               <div
                 className={`flex h-4 w-4 items-center justify-center rounded-full ${
@@ -81,7 +83,12 @@ const PaymentMethod = () => {
             >
               <div className="flex items-center">
                 <div className="pr-2.5">
-                  <Image src="/images/checkout/cash.svg" alt="cash" width={21} height={21} />
+                  <Image
+                    src="/images/checkout/cash.svg"
+                    alt="cash"
+                    width={21}
+                    height={21}
+                  />
                 </div>
 
                 <div className="border-l border-gray-4 pl-2.5">
@@ -120,7 +127,12 @@ const PaymentMethod = () => {
             >
               <div className="flex items-center">
                 <div className="pr-2.5">
-                  <Image src="/images/checkout/paypal.svg" alt="paypal" width={75} height={20}/>
+                  <Image
+                    src="/images/checkout/paypal.svg"
+                    alt="paypal"
+                    width={75}
+                    height={20}
+                  />
                 </div>
 
                 <div className="border-l border-gray-4 pl-2.5">

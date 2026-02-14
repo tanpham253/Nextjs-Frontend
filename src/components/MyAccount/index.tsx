@@ -4,9 +4,13 @@ import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import AddressModal from "./AddressModal";
 import Orders from "../Orders";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const MyAccount = () => {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [addressModal, setAddressModal] = useState(false);
 
@@ -16,6 +20,62 @@ const MyAccount = () => {
 
   const closeAddressModal = () => {
     setAddressModal(false);
+  };
+
+  //Kiểm tra xem đã đăng nhập chưa, nếu chưa thì cho login
+  React.useEffect(() => {
+    if (status !== "authenticated") {
+      router.push("/signin");
+    }
+  }, [status, router]);
+
+  const [firstName, setFirstName] = useState(session?.user?.first_name || "");
+  const [lastName, setLastName] = useState(session?.user?.last_name || "");
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const handleUpdateProfile = async (e: any) => {
+    e.preventDefault();
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/customers/${session?.user?._id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+        }),
+      }
+    );
+
+    const data = await res.json();
+    console.log("UPDATED:", data);
+  };
+
+  const handleChangePassword = async (e: any) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmNewPassword) {
+      return alert("Passwords do not match");
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/customers/${session?.user?._id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          oldPassword,
+          newPassword,
+        }),
+      }
+    );
+
+    const data = await res.json();
+    console.log("PASSWORD UPDATED:", data);
   };
 
   return (
@@ -29,20 +89,53 @@ const MyAccount = () => {
             <div className="xl:max-w-[370px] w-full bg-white rounded-xl shadow-1">
               <div className="flex xl:flex-col">
                 <div className="hidden lg:flex flex-wrap items-center gap-5 py-6 px-4 sm:px-7.5 xl:px-9 border-r xl:border-r-0 xl:border-b border-gray-3">
-                  <div className="max-w-[64px] w-full h-16 rounded-full overflow-hidden">
+                  {/* <div className="max-w-[64px] w-full h-16 rounded-full overflow-hidden">
                     <Image
-                      src="/images/users/user-04.jpg"
+                      src="http://www.w3.org/2000/svg"
                       alt="user"
                       width={64}
                       height={64}
                     />
-                  </div>
+                  </div> */}
+
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M12 1.25C9.37666 1.25 7.25001 3.37665 7.25001 6C7.25001 8.62335 9.37666 10.75 12 10.75C14.6234 10.75 16.75 8.62335 16.75 6C16.75 3.37665 14.6234 1.25 12 1.25ZM8.75001 6C8.75001 4.20507 10.2051 2.75 12 2.75C13.7949 2.75 15.25 4.20507 15.25 6C15.25 7.79493 13.7949 9.25 12 9.25C10.2051 9.25 8.75001 7.79493 8.75001 6Z"
+                      fill="#3C50E0"
+                    />
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M12 12.25C9.68646 12.25 7.55494 12.7759 5.97546 13.6643C4.4195 14.5396 3.25001 15.8661 3.25001 17.5L3.24995 17.602C3.24882 18.7638 3.2474 20.222 4.52642 21.2635C5.15589 21.7761 6.03649 22.1406 7.22622 22.3815C8.41927 22.6229 9.97424 22.75 12 22.75C14.0258 22.75 15.5808 22.6229 16.7738 22.3815C17.9635 22.1406 18.8441 21.7761 19.4736 21.2635C20.7526 20.222 20.7512 18.7638 20.7501 17.602L20.75 17.5C20.75 15.8661 19.5805 14.5396 18.0246 13.6643C16.4451 12.7759 14.3136 12.25 12 12.25ZM4.75001 17.5C4.75001 16.6487 5.37139 15.7251 6.71085 14.9717C8.02681 14.2315 9.89529 13.75 12 13.75C14.1047 13.75 15.9732 14.2315 17.2892 14.9717C18.6286 15.7251 19.25 16.6487 19.25 17.5C19.25 18.8078 19.2097 19.544 18.5264 20.1004C18.1559 20.4022 17.5365 20.6967 16.4762 20.9113C15.4193 21.1252 13.9742 21.25 12 21.25C10.0258 21.25 8.58075 21.1252 7.5238 20.9113C6.46354 20.6967 5.84413 20.4022 5.4736 20.1004C4.79033 19.544 4.75001 18.8078 4.75001 17.5Z"
+                      fill="#3C50E0"
+                    />
+                  </svg>
 
                   <div>
                     <p className="font-medium text-dark mb-0.5">
-                      James Septimus
+                      {session?.user?.name || "Guest User"}
                     </p>
-                    <p className="text-custom-xs">Member Since Sep 2020</p>
+
+                    <p className="text-custom-xs">
+                      Member Since{" "}
+                      {session?.user?.createdAt
+                        ? new Date(session.user.createdAt).toLocaleString(
+                            "en-US",
+                            {
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )
+                        : "—"}
+                    </p>
                   </div>
                 </div>
 
@@ -129,7 +222,7 @@ const MyAccount = () => {
                       Orders
                     </button>
 
-                    <button
+                    {/* <button
                       onClick={() => setActiveTab("downloads")}
                       className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${
                         activeTab === "downloads"
@@ -155,7 +248,7 @@ const MyAccount = () => {
                         />
                       </svg>
                       Downloads
-                    </button>
+                    </button> */}
 
                     <button
                       onClick={() => setActiveTab("addresses")}
@@ -262,7 +355,7 @@ const MyAccount = () => {
               }`}
             >
               <p className="text-dark">
-                Hello Annie (not Annie?
+                Hello (not you?
                 <button
                   className="text-red ease-out duration-200 hover:underline"
                   type="button"
@@ -585,7 +678,8 @@ const MyAccount = () => {
                 activeTab === "account-details" ? "block" : "hidden"
               }`}
             >
-              <form>
+              <form autoComplete="off">
+                {/* ============= Name Section ============= */}
                 <div className="bg-white shadow-1 rounded-xl p-4 sm:p-8.5">
                   <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-5">
                     <div className="w-full">
@@ -595,11 +689,9 @@ const MyAccount = () => {
 
                       <input
                         type="text"
-                        name="firstName"
-                        id="firstName"
-                        placeholder="Jhon"
-                        value="Jhon"
-                        className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="rounded-md border border-gray-3 bg-gray-1 w-full py-2.5 px-5 outline-none"
                       />
                     </div>
 
@@ -610,50 +702,16 @@ const MyAccount = () => {
 
                       <input
                         type="text"
-                        name="lastName"
-                        id="lastName"
-                        placeholder="Deo"
-                        value="Deo"
-                        className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="rounded-md border border-gray-3 bg-gray-1 w-full py-2.5 px-5 outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="mb-5">
-                    <label htmlFor="countryName" className="block mb-2.5">
-                      Country/ Region <span className="text-red">*</span>
-                    </label>
-
-                    <div className="relative">
-                      <select className="w-full bg-gray-1 rounded-md border border-gray-3 text-dark-4 py-3 pl-5 pr-9 duration-200 appearance-none outline-none focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20">
-                        <option value="0">Australia</option>
-                        <option value="1">America</option>
-                        <option value="2">England</option>
-                      </select>
-
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-4">
-                        <svg
-                          className="fill-current"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M2.41469 5.03569L2.41467 5.03571L2.41749 5.03846L7.76749 10.2635L8.0015 10.492L8.23442 10.2623L13.5844 4.98735L13.5844 4.98735L13.5861 4.98569C13.6809 4.89086 13.8199 4.89087 13.9147 4.98569C14.0092 5.08024 14.0095 5.21864 13.9155 5.31345C13.9152 5.31373 13.915 5.31401 13.9147 5.31429L8.16676 10.9622L8.16676 10.9622L8.16469 10.9643C8.06838 11.0606 8.02352 11.0667 8.00039 11.0667C7.94147 11.0667 7.89042 11.0522 7.82064 10.9991L2.08526 5.36345C1.99127 5.26865 1.99154 5.13024 2.08609 5.03569C2.18092 4.94086 2.31986 4.94086 2.41469 5.03569Z"
-                            fill=""
-                            stroke=""
-                            stroke-width="0.666667"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-
                   <button
-                    type="submit"
-                    className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
+                    onClick={handleUpdateProfile}
+                    className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md"
                   >
                     Save Changes
                   </button>
@@ -664,6 +722,7 @@ const MyAccount = () => {
                   section and in reviews
                 </p>
 
+                {/* ============= Password Section ============= */}
                 <p className="font-medium text-xl sm:text-2xl text-dark mb-7">
                   Password Change
                 </p>
@@ -676,10 +735,9 @@ const MyAccount = () => {
 
                     <input
                       type="password"
-                      name="oldPassword"
-                      id="oldPassword"
-                      autoComplete="on"
-                      className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      className="rounded-md border border-gray-3 bg-gray-1 w-full py-2.5 px-5 outline-none"
                     />
                   </div>
 
@@ -690,10 +748,9 @@ const MyAccount = () => {
 
                     <input
                       type="password"
-                      name="newPassword"
-                      id="newPassword"
-                      autoComplete="on"
-                      className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="rounded-md border border-gray-3 bg-gray-1 w-full py-2.5 px-5 outline-none"
                     />
                   </div>
 
@@ -707,16 +764,15 @@ const MyAccount = () => {
 
                     <input
                       type="password"
-                      name="confirmNewPassword"
-                      id="confirmNewPassword"
-                      autoComplete="on"
-                      className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      className="rounded-md border border-gray-3 bg-gray-1 w-full py-2.5 px-5 outline-none"
                     />
                   </div>
 
                   <button
-                    type="submit"
-                    className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
+                    onClick={handleChangePassword}
+                    className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md"
                   >
                     Change Password
                   </button>

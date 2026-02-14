@@ -1,20 +1,28 @@
 import React, { useEffect, useState } from "react";
 import SingleOrder from "./SingleOrder";
 import ordersData from "./ordersData";
+import { useSession } from "next-auth/react";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const Orders = () => {
+  const { data: session } = useSession();
+  const user = session?.user as any;
   const [orders, setOrders] = useState<any>([]);
-
+  const userEmail = user?.email;
   useEffect(() => {
-    fetch(`/api/order`)
+    if (!userEmail) return;
+    console.log("Fetching orders for user:", userEmail);
+    fetch(`${apiUrl}/api/v1/orders?keyword=${encodeURIComponent(userEmail)}`)
       .then((res) => res.json())
       .then((data) => {
-        setOrders(data.orders);
+        console.log("Orders data:", data);
+        console.log("Orders data orders:", data.data.orders);
+        setOrders(data.data.orders);
       })
       .catch((err) => {
         console.log(err.message);
       });
-  }, []);
+  }, [userEmail]);
 
   return (
     <>
@@ -35,7 +43,7 @@ const Orders = () => {
               </div>
 
               <div className="min-w-[213px]">
-                <p className="text-custom-sm text-dark">Title</p>
+                <p className="text-custom-sm text-dark">Note</p>
               </div>
 
               <div className="min-w-[113px]">
@@ -47,8 +55,8 @@ const Orders = () => {
               </div>
             </div>
           )}
-          {ordersData.length > 0 ? (
-            ordersData.map((orderItem, key) => (
+          {orders.length > 0 ? (
+            orders.map((orderItem, key) => (
               <SingleOrder key={key} orderItem={orderItem} smallView={false} />
             ))
           ) : (

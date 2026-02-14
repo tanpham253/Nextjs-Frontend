@@ -9,6 +9,7 @@ import { addItemToCart } from "@/redux/features/cart-slice";
 import Image from "next/image";
 import Link from "next/link";
 import { addItemToWishlist } from "@/redux/features/wishlist-slice";
+import { getImageSrc, getServerImageSrc } from "@/helper/imageLink.helper";
 
 const SingleItem = ({ item }: { item: Product }) => {
   const { openModal } = useModalContext();
@@ -45,43 +46,25 @@ const SingleItem = ({ item }: { item: Product }) => {
         <div className="text-center px-4 py-7.5">
           <div className="flex items-center justify-center gap-2.5 mb-2">
             <div className="flex items-center gap-1">
-              <Image
-                src="/images/icons/icon-star.svg"
-                alt="star icon"
-                width={14}
-                height={14}
-              />
-              <Image
-                src="/images/icons/icon-star.svg"
-                alt="star icon"
-                width={14}
-                height={14}
-              />
-              <Image
-                src="/images/icons/icon-star.svg"
-                alt="star icon"
-                width={14}
-                height={14}
-              />
-              <Image
-                src="/images/icons/icon-star.svg"
-                alt="star icon"
-                width={14}
-                height={14}
-              />
-              <Image
-                src="/images/icons/icon-star.svg"
-                alt="star icon"
-                width={14}
-                height={14}
-              />
-            </div>
+              {[...Array(Number(item.star_number))].map((_, i) => (
+                <Image
+                  key={i}
+                  src="/images/icons/icon-star.svg"
+                  alt="star icon"
+                  width={14}
+                  height={14}
+                />
+              ))}
 
-            <p className="text-custom-sm">({item.reviews})</p>
+              {/* <p className="text-custom-sm">({item.star_number ?? 0})</p> */}
+            </div>
           </div>
 
           <h3 className="font-medium text-dark ease-out duration-200 hover:text-blue mb-1.5">
-            <Link href="/shop-details"> {item.title} </Link>
+            <Link href={`/shop-details/${item._id}`}>
+              {" "}
+              {item.product_name}{" "}
+            </Link>
           </h3>
 
           <span className="flex items-center justify-center gap-2 font-medium text-lg">
@@ -91,7 +74,12 @@ const SingleItem = ({ item }: { item: Product }) => {
         </div>
 
         <div className="flex justify-center items-center">
-          <Image src={item.imgs.previews[0]} alt="" width={280} height={280} />
+          <Image
+            src={getServerImageSrc(item.thumbnail)}
+            alt=""
+            width={280}
+            height={280}
+          />
         </div>
 
         <div className="absolute right-0 bottom-0 translate-x-full u-w-full flex flex-col gap-2 p-5.5 ease-linear duration-300 group-hover:translate-x-0">

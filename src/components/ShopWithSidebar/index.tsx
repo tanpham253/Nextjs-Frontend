@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import CustomSelect from "./CustomSelect";
 import CategoryDropdown from "./CategoryDropdown";
-import GenderDropdown from "./GenderDropdown";
-import SizeDropdown from "./SizeDropdown";
+// import GenderDropdown from "./GenderDropdown";
+// import SizeDropdown from "./SizeDropdown";
 import ColorsDropdwon from "./ColorsDropdwon";
 import PriceDropdown from "./PriceDropdown";
 import shopData from "../Shop/shopData";
@@ -12,10 +12,18 @@ import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
 
 const ShopWithSidebar = () => {
+  const [search, setSearch] = useState("");
   const [productStyle, setProductStyle] = useState("grid");
   const [productSidebar, setProductSidebar] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPageChanging, setIsPageChanging] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const [limit] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
   const handleStickyMenu = () => {
     if (window.scrollY >= 80) {
       setStickyMenu(true);
@@ -97,6 +105,59 @@ const ShopWithSidebar = () => {
     };
   });
 
+  // Fetch data from backend
+  const fetchProducts = async (newPage = page, newSearch = search) => {
+    try {
+      setIsPageChanging(true);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/find-products?page=${newPage}&limit=${limit}&search=${newSearch}`
+      );
+
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+      const data = await res.json();
+
+      setProducts(data.data?.products || []);
+      setTotalPages(data.data?.totalPages || 1);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch products");
+    } finally {
+      setIsPageChanging(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(page, search);
+  }, [page]);
+  
+  //helper for pagination
+  const generatePages = () => {
+    const visible = 5; // show 5 pages around
+    let pages = [];
+
+    if (totalPages <= visible) {
+      // 1–5 only
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (page <= 3) {
+        pages = [1, 2, 3, 4, "...", totalPages];
+      } else if (page >= totalPages - 2) {
+        pages = [
+          1,
+          "...",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        ];
+      } else {
+        pages = [1, "...", page - 1, page, page + 1, "...", totalPages];
+      }
+    }
+
+    return pages;
+  };
   return (
     <>
       <Breadcrumb
@@ -160,10 +221,10 @@ const ShopWithSidebar = () => {
                   <CategoryDropdown categories={categories} />
 
                   {/* <!-- gender box --> */}
-                  <GenderDropdown genders={genders} />
+                  {/* <GenderDropdown genders={genders} /> */}
 
                   {/* // <!-- size box --> */}
-                  <SizeDropdown />
+                  {/* <SizeDropdown /> */}
 
                   {/* // <!-- color box --> */}
                   <ColorsDropdwon />
@@ -182,11 +243,27 @@ const ShopWithSidebar = () => {
                   {/* <!-- top bar left --> */}
                   <div className="flex flex-wrap items-center gap-4">
                     <CustomSelect options={options} />
+                    {/* Search Input */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search products..."
+                        className="border border-gray-300 rounded-md py-2 px-3 w-64 focus:border-blue focus:ring-blue focus:outline-none"
+                      />
 
-                    <p>
-                      Showing <span className="text-dark">9 of 50</span>{" "}
-                      Products
-                    </p>
+                      {/* Search Button */}
+                      <button
+                        onClick={() => {
+                          fetchProducts(1, search);
+                          setPage(1);
+                        }}
+                        className="bg-blue text-white px-4 py-2 rounded-md hover:bg-blue-dark duration-200"
+                      >
+                        Search
+                      </button>
+                    </div>
                   </div>
 
                   {/* <!-- top bar right --> */}
@@ -272,18 +349,23 @@ const ShopWithSidebar = () => {
 
               {/* <!-- Products Grid Tab Content Start --> */}
               <div
-                className={`${
-                  productStyle === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7.5 gap-y-9"
-                    : "flex flex-col gap-7.5"
-                }`}
+                className={`
+                  transition-opacity duration-300
+                  ${isPageChanging ? "opacity-0" : "opacity-100"}
+                `}
               >
-                {shopData.map((item, key) =>
-                  productStyle === "grid" ? (
-                    <SingleGridItem item={item} key={key} />
-                  ) : (
-                    <SingleListItem item={item} key={key} />
-                  )
+                {productStyle === "grid" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
+                    {products.map((product, key) => (
+                      <SingleGridItem key={key} item={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    {products.map((product, key) => (
+                      <SingleListItem key={key} item={product} />
+                    ))}
+                  </div>
                 )}
               </div>
               {/* <!-- Products Grid Tab Content End --> */}
@@ -292,113 +374,47 @@ const ShopWithSidebar = () => {
               <div className="flex justify-center mt-15">
                 <div className="bg-white shadow-1 rounded-md p-2">
                   <ul className="flex items-center">
+                    {/* Prev Button */}
                     <li>
                       <button
-                        id="paginationLeft"
-                        aria-label="button for pagination left"
-                        type="button"
-                        disabled
-                        className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px disabled:text-gray-4"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="flex items-center justify-center w-8 h-9 rounded-[3px] disabled:text-gray-4 hover:bg-blue hover:text-white"
                       >
-                        <svg
-                          className="fill-current"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 18 18"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12.1782 16.1156C12.0095 16.1156 11.8407 16.0594 11.7282 15.9187L5.37197 9.45C5.11885 9.19687 5.11885 8.80312 5.37197 8.55L11.7282 2.08125C11.9813 1.82812 12.3751 1.82812 12.6282 2.08125C12.8813 2.33437 12.8813 2.72812 12.6282 2.98125L6.72197 9L12.6563 15.0187C12.9095 15.2719 12.9095 15.6656 12.6563 15.9187C12.4876 16.0312 12.347 16.1156 12.1782 16.1156Z"
-                            fill=""
-                          />
-                        </svg>
+                        ‹
                       </button>
                     </li>
 
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] bg-blue text-white hover:text-white hover:bg-blue"
-                      >
-                        1
-                      </a>
-                    </li>
+                    {/* Page Buttons */}
+                    {generatePages().map((p, i) => (
+                      <li key={i}>
+                        {p === "..." ? (
+                          <span className="px-3 py-1.5">...</span>
+                        ) : (
+                          <button
+                            onClick={() => setPage(p)}
+                            className={`flex py-1.5 px-3.5 rounded-[3px] duration-200 ${
+                              page === p
+                                ? "bg-blue text-white"
+                                : "hover:bg-blue hover:text-white"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        )}
+                      </li>
+                    ))}
 
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        2
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        3
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        4
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        5
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        ...
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        10
-                      </a>
-                    </li>
-
+                    {/* Next Button */}
                     <li>
                       <button
-                        id="paginationLeft"
-                        aria-label="button for pagination left"
-                        type="button"
-                        className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] hover:text-white hover:bg-blue disabled:text-gray-4"
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages}
+                        className="flex items-center justify-center w-8 h-9 rounded-[3px] disabled:text-gray-4 hover:bg-blue hover:text-white"
                       >
-                        <svg
-                          className="fill-current"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 18 18"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M5.82197 16.1156C5.65322 16.1156 5.5126 16.0594 5.37197 15.9469C5.11885 15.6937 5.11885 15.3 5.37197 15.0469L11.2782 9L5.37197 2.98125C5.11885 2.72812 5.11885 2.33437 5.37197 2.08125C5.6251 1.82812 6.01885 1.82812 6.27197 2.08125L12.6282 8.55C12.8813 8.80312 12.8813 9.19687 12.6282 9.45L6.27197 15.9187C6.15947 16.0312 5.99072 16.1156 5.82197 16.1156Z"
-                            fill=""
-                          />
-                        </svg>
+                        ›
                       </button>
                     </li>
                   </ul>

@@ -7,6 +7,7 @@ import {
 } from "@/redux/features/cart-slice";
 
 import Image from "next/image";
+import { getServerImageSrc } from "@/helper/imageLink.helper";
 
 const SingleItem = ({ item }) => {
   const [quantity, setQuantity] = useState(item.quantity);
@@ -14,18 +15,18 @@ const SingleItem = ({ item }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleRemoveFromCart = () => {
-    dispatch(removeItemFromCart(item.id));
+    dispatch(removeItemFromCart(item._id));
   };
 
   const handleIncreaseQuantity = () => {
     setQuantity(quantity + 1);
-    dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity + 1 }));
+    dispatch(updateCartItemQuantity({ _id: item._id, quantity: quantity + 1 }));
   };
 
   const handleDecreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
-      dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity - 1 }));
+      dispatch(updateCartItemQuantity({ _id: item._id, quantity: quantity - 1 }));
     } else {
       return;
     }
@@ -37,7 +38,7 @@ const SingleItem = ({ item }) => {
         <div className="flex items-center justify-between gap-5">
           <div className="w-full flex items-center gap-5.5">
             <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5">
-              <Image width={200} height={200} src={item.imgs?.thumbnails[0]} alt="product" />
+              <Image width={200} height={200} src={getServerImageSrc(item.thumbnail)} alt="product" />
             </div>
 
             <div>
